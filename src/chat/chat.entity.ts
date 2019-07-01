@@ -10,7 +10,7 @@ export class Chat {
   @Column()
   userId: string;
 
-  @Column()
+  @Column({ nullable: true, default: 'guest' })
   userName: string;
 
   @Column()
