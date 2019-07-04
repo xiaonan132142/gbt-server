@@ -38,6 +38,6 @@ const {
  *         schema:
  *           $ref: '#/definitions/Active'
  */
-router.get('/active/list', Active.getAll);
+router.get('/list', Active.getAll);
 
 module.exports = router;

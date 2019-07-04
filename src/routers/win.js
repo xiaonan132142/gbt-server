@@ -42,6 +42,6 @@ const {
  *         schema:
  *           $ref: '#/definitions/Win'
  */
-router.get('/win/list', Win.getAll);
+router.get('/list', Win.getAll);
 
 module.exports = router;

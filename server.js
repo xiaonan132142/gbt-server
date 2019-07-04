@@ -5,6 +5,7 @@ const { requestLogger, logger } = require('./src/middleware/logFactory');
 const morgan = require('morgan');
 var bodyParser = require('body-parser')
 const settings = require('./config/settings');
+const scheduleRunning = require('./src/schedules');
 const app = express();
 
 // swagger
@@ -47,6 +48,7 @@ const predict = require('./src/routers/predict');
 const active = require('./src/routers/active');
 const win = require('./src/routers/win');
 const chat = require('./src/routers/chat');
+
 // 设置 express 根目录
 app.use(requestLogger);
 app.use(morgan('dev'));
@@ -65,3 +67,5 @@ var server = app.listen(settings.serverPort, function () {
   var port = server.address().port
   console.log("应用实例，访问地址为 http://%s:%s", host, port)
 })
+
+scheduleRunning();

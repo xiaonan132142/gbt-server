@@ -34,6 +34,17 @@ const {
 /**
  * @swagger
  * definitions:
+ *   Index:
+ *     properties:
+ *       price:
+ *         type: integer
+ *       ratio:
+ *         type: string
+ */
+
+/**
+ * @swagger
+ * definitions:
  *   PredictCreateDTO:
  *     properties:
  *       phoneNum:
@@ -61,6 +72,23 @@ const {
  *           $ref: '#/definitions/Predict'
  */
 router.get('/list', Predict.getAll);
+
+/**
+ * @swagger
+ * /predict/latestIndex:
+ *   get:
+ *     tags:
+ *       - Predicts
+ *     description: Returns latest index
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: An Object contains latest index
+ *         schema:
+ *           $ref: '#/definitions/Index'
+ */
+router.get('/latestIndex', Predict.getLatestIndex);
 
 /**
  * @swagger
