@@ -40,7 +40,7 @@ const {
  * /chat/list:
  *   get:
  *     tags:
- *       - Predicts
+ *       - Chats
  *     description: Returns all predicts
  *     produces:
  *       - application/json
@@ -57,7 +57,7 @@ router.get('/list', Chat.getAll);
  * /chat/add:
  *   post:
  *     tags:
- *       - Predicts
+ *       - Chats
  *     description: Creates a new predict
  *     produces:
  *       - application/json

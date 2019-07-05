@@ -9,8 +9,6 @@ const {
  * definitions:
  *   Predict:
  *     properties:
- *       _id:
- *         type: string
  *       userId:
  *         type: string
  *       username:
@@ -37,7 +35,7 @@ const {
  *   Index:
  *     properties:
  *       price:
- *         type: integer
+ *         type: string
  *       ratio:
  *         type: string
  */
@@ -89,6 +87,28 @@ router.get('/list', Predict.getAll);
  *           $ref: '#/definitions/Index'
  */
 router.get('/latestIndex', Predict.getLatestIndex);
+
+/**
+ * @swagger
+ * /predict/personal:
+ *   get:
+ *     tags:
+ *       - Predicts
+ *     description: Returns one predict
+ *     parameters:
+ *       - name: userId
+ *         in: query
+ *         required: true
+ *         type: string
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: An Object contains one predict
+ *         schema:
+ *           $ref: '#/definitions/Predict'
+ */
+router.get('/personal', Predict.getOneByUserId);
 
 /**
  * @swagger

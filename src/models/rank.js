@@ -3,7 +3,7 @@ var shortid = require('shortid');
 var moment = require('moment');
 var Schema = mongoose.Schema;
 
-var ActiveSchema = new Schema({
+var WinSchema = new Schema({
     _id: {
       type: String,
       'default': shortid.generate,
@@ -11,14 +11,20 @@ var ActiveSchema = new Schema({
     userId: String,
     username: String,
     avatar: String,
-
-    times: Number,
-    rank: Number,
+    winTimes: Number,
+    winRatio: Number,
+    predictTimes: Number,
   },
   {
     timestamps: true,
   });
 
-var Active = mongoose.model('Active', ActiveSchema);
-module.exports = Active;
+WinSchema.index({
+  userId: 1,
+}, {
+  unique: true,
+});
+
+var Rank = mongoose.model('Rank', WinSchema);
+module.exports = Rank;
 

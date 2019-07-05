@@ -31,5 +31,4 @@ db.on('close', function() {
 
 exports.Predict = require('./predict');
 exports.Chat = require('./chat');
-exports.Active = require('./active');
-exports.Win = require('./win');
+exports.Rank = require('./rank');

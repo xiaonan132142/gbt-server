@@ -1,31 +1,9 @@
 const _ = require('lodash');
 const settings = require('../../config/settings');
-const requestIp = require('request-ip');
 const PredictModel = require('../models').Predict;
 const { getUserBasicInfo } = require('../utils/dataAsync');
 const moment = require('moment');
-
-const request = require('request');
-const randomstring = require('randomstring');
-
-let asyncFunc = async () => {
-  return new Promise((resolve, reject) => {
-    request('https://www.huobi.co/-/x/pro/market/overview5?r=' + randomstring.generate(6), function(error, response, body) {
-      if (response && response.statusCode === 200) {
-        let dataArr = JSON.parse(body).data;
-        let targets = dataArr.filter(d => {
-          return d.symbol === 'btcusdt';
-        });
-        if (targets.length) {
-          let btcusdt = targets[0];
-          resolve(btcusdt);
-        }
-      } else {
-        reject(500);
-      }
-    });
-  });
-};
+const { read } = require('../utils/cacheUtil');
 
 class Predict {
   constructor() {
@@ -72,6 +50,43 @@ class Predict {
     }
   }
 
+  async getOneByUserId(req, res, next) {
+    try {
+      let userId = req.query.userId;
+      if (!userId) {
+        res.send({
+          state: 'error',
+          message: 'userId 不能为空',
+        });
+        return;
+      }
+
+      const rank = await PredictModel.findOne({ userId, date: moment().format('YYYY-MM-DD') }, {
+        userId: 1,
+        username: 1,
+        avatar: 1,
+        date: 1,
+        predictResult: 1,
+        actualResult: 1,
+        predictValue: 1,
+        actualValue: 1,
+        isFinished: 1,
+      });
+
+      res.send({
+        state: 'success',
+        data: rank,
+      });
+    } catch (err) {
+      res.status(500);
+      res.send({
+        state: 'error',
+        stack: err && err.stack,
+        message: '获取个人预言记录失败',
+      });
+    }
+  }
+
   async addOne(req, res, next) {
     const phoneNum = req.body.phoneNum;
     const predictResult = req.body.predictResult;
@@ -104,7 +119,7 @@ class Predict {
         predictResult,
         predictValue,
       };
-      let existed = await PredictModel.findOne({ date: moment().format('YYYY-MM-DD') });
+      let existed = await PredictModel.findOne({ userId: userInfo.id, date: moment().format('YYYY-MM-DD') });
       if (!_.isEmpty(existed)) {
         res.status(500);
         res.send({
@@ -131,20 +146,8 @@ class Predict {
 
   async getLatestIndex(req, res, next) {
     try {
-
-      let a = await asyncFunc();
-      let ratio = ((a.close - a.open) / a.open) * 100;
-      if (ratio > 0) {
-        ratio = '+' + ratio.toFixed(2) + "%";
-      } else {
-        ratio = '-' + ratio.toFixed(2) + "%";
-      }
-      let data = {
-        price: a.close,
-        ratio,
-      };
+      const data = await read(settings.redis_key_btc_index)
       console.log(data);
-
       res.send({
         state: 'success',
         data,
@@ -154,7 +157,7 @@ class Predict {
       res.send({
         state: 'error',
         stack: err && err.stack,
-        message: '获取预言成功列表失败',
+        message: '获取交易所数据失败',
       });
     }
   }

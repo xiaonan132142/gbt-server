@@ -12,18 +12,27 @@ var PredictSchema = new Schema({
     username: String,
     avatar: String,
 
-    date: { type: String, unique: true, default: moment().format('YYYY-MM-DD') },
+    date: { type: String, default: moment().format('YYYY-MM-DD') },
 
     predictResult: Number,
     actualResult: Number,
     predictValue: Number,
     actualValue: Number,
 
+    isWin: { type: Boolean, default: false },
     isFinished: { type: Boolean, default: false },
   },
   {
     timestamps: true,
   });
+
+PredictSchema.index({
+  userId: 1,
+  date: 1,
+}, {
+  unique: true,
+});
+
 
 var Predict = mongoose.model('Predict', PredictSchema);
 module.exports = Predict;

@@ -3,9 +3,9 @@ global.NODE_ENV = isProd;
 const express = require('express');
 const { requestLogger, logger } = require('./src/middleware/logFactory');
 const morgan = require('morgan');
-var bodyParser = require('body-parser')
+const bodyParser = require('body-parser');
 const settings = require('./config/settings');
-const scheduleRunning = require('./src/schedules');
+const { rankStatistic, btcIndexQuery, settlement } = require('./src/schedules');
 const app = express();
 
 // swagger
@@ -17,7 +17,7 @@ var swaggerDefinition = {
     version: '1.0.0',
     description: 'Swagger 接口文档',
   },
-  host: 'localhost:8081',
+  host: settings.swaggerUrl,
   basePath: '/',
 };
 
@@ -42,30 +42,41 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 // parse application/x-www-form-urlencoded
 //app.use(bodyParser.urlencoded({ extended: false }))
 // parse application/json
-app.use(bodyParser.json())
-
+app.use(bodyParser.json());
 const predict = require('./src/routers/predict');
-const active = require('./src/routers/active');
-const win = require('./src/routers/win');
+const rank = require('./src/routers/rank');
 const chat = require('./src/routers/chat');
+
+
+app.all('*', function(req, res, next) {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Content-Length, Authorization, Accept, X-Requested-With, Current-Page');
+  res.header('Access-Control-Allow-Methods', 'PUT, POST, GET, DELETE, OPTIONS');
+
+  if (req.method == 'OPTIONS') {
+    res.sendStatus(200);
+  } else {
+    next();
+  }
+});
 
 // 设置 express 根目录
 app.use(requestLogger);
 app.use(morgan('dev'));
 app.use('/predict', predict);
-app.use('/active', active);
-app.use('/win', win);
 app.use('/chat', chat);
+app.use('/rank', rank);
 
-
-app.get('/', function (req, res) {
+app.get('/', function(req, res) {
   res.send('Hello World');
-})
+});
 
-var server = app.listen(settings.serverPort, function () {
-  var host = server.address().address
-  var port = server.address().port
-  console.log("应用实例，访问地址为 http://%s:%s", host, port)
-})
+var server = app.listen(settings.serverPort, function() {
+  var host = server.address().address;
+  var port = server.address().port;
+  console.log('应用实例，访问地址为 http://%s:%s', host, port);
+});
 
-scheduleRunning();
+rankStatistic();
+btcIndexQuery();
+//settlement();
