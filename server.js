@@ -5,7 +5,7 @@ const { requestLogger, logger } = require('./src/middleware/logFactory');
 const morgan = require('morgan');
 const bodyParser = require('body-parser');
 const settings = require('./config/settings');
-const { rankStatistic, btcIndexQuery, settlement } = require('./src/schedules');
+const { rankStatistic, btcIndexQuery, batchUpdateResult, settlement } = require('./src/schedules');
 const app = express();
 
 // swagger
@@ -46,6 +46,7 @@ app.use(bodyParser.json());
 const predict = require('./src/routers/predict');
 const rank = require('./src/routers/rank');
 const chat = require('./src/routers/chat');
+const award = require('./src/routers/award');
 
 
 app.all('*', function(req, res, next) {
@@ -66,6 +67,7 @@ app.use(morgan('dev'));
 app.use('/predict', predict);
 app.use('/chat', chat);
 app.use('/rank', rank);
+app.use('/award', award);
 
 app.get('/', function(req, res) {
   res.send('Hello World');
@@ -79,4 +81,5 @@ var server = app.listen(settings.serverPort, function() {
 
 rankStatistic();
 btcIndexQuery();
-//settlement();
+//batchUpdateResult();
+settlement();

@@ -25,6 +25,19 @@ module.exports = {
   redis_db: 0,
 
   redis_key_btc_index: 'redis_key_btc_index',
+  u3Config: {
+    httpEndpoint:"http://pioneer.natapp1.cc",
+    httpEndpointHistory:"http://pioneer-history.natapp1.cc",
+    chainId:"20c35b993c10b5ea1007014857bb2b8832fb8ae22e9dcfdc61dacf336af4450f",
+    //logger: undefined
+  },
+  poolAccount:"guessbtc",
+  poolAccountPk:"5HwVm37N47bXiWoEP2ZMBL6HCDWuPWmoyvgZAmokvXH5u1Q7Mfo",
+  gainAccount:"guessbtcgain",
+  gainAccountPk:"5Ke8RSvYJmN96tArJP5enS3a3kVtojCTT5gf3UUg7EAMnpeWToh",
+  personalAccount:"cona2",
+  percentageForAward:0.8,
+  topUserForAward:1,
 
   logger: {
     'directory': logPath,

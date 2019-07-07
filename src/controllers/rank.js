@@ -83,8 +83,6 @@ class Rank {
         winTimes: 1,
         predictTimes: 1,
         winRatio: 1,
-        winRank: 1,
-        predictRank: 1,
       });
 
       res.send({

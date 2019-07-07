@@ -12,6 +12,8 @@ var PredictSchema = new Schema({
     username: String,
     avatar: String,
 
+    accountName: String,
+
     date: { type: String, default: moment().format('YYYY-MM-DD') },
 
     predictResult: Number,

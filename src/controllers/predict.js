@@ -24,6 +24,7 @@ class Predict {
         'actualResult': 1,
         'predictValue': 1,
         'actualValue': 1,
+        'isWin': 1,
         'isFinished': 1,
       }).sort({
         createdAt: -1,
@@ -70,6 +71,7 @@ class Predict {
         actualResult: 1,
         predictValue: 1,
         actualValue: 1,
+        isWin: 1,
         isFinished: 1,
       });
 
@@ -147,7 +149,6 @@ class Predict {
   async getLatestIndex(req, res, next) {
     try {
       const data = await read(settings.redis_key_btc_index)
-      console.log(data);
       res.send({
         state: 'success',
         data,
