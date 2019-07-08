@@ -44,6 +44,13 @@ const {
  *     description: Returns all predicts
  *     produces:
  *       - application/json
+ *     parameters:
+ *       - name: current
+ *         in: query
+ *         type: integer
+ *       - name: pageSize
+ *         in: query
+ *         type: integer
  *     responses:
  *       200:
  *         description: An Object contains array of predicts

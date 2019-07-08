@@ -38,6 +38,13 @@ const {
  *     description: Returns all rank by active
  *     produces:
  *       - application/json
+ *     parameters:
+ *       - name: current
+ *         in: query
+ *         type: integer
+ *       - name: pageSize
+ *         in: query
+ *         type: integer
  *     responses:
  *       200:
  *         description: An Object contains all rank by active
@@ -55,6 +62,13 @@ router.get('/activeList', Rank.getAllByActive);
  *     description: Returns all rank by win
  *     produces:
  *       - application/json
+ *     parameters:
+ *       - name: current
+ *         in: query
+ *         type: integer
+ *       - name: pageSize
+ *         in: query
+ *         type: integer
  *     responses:
  *       200:
  *         description: An Object contains all rank by win

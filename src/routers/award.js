@@ -38,6 +38,12 @@ const {
  *         in: query
  *         required: true
  *         type: string
+ *       - name: current
+ *         in: query
+ *         type: integer
+ *       - name: pageSize
+ *         in: query
+ *         type: integer
  *     responses:
  *       200:
  *         description: An Object contains array of awards

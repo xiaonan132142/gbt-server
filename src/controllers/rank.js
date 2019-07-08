@@ -76,6 +76,18 @@ class Rank {
         });
         return;
       }
+
+      const winUserIds = await RankModel.find({}, { userId: 1 }).sort({
+        winRatio: -1,
+      });
+
+      const predictUserIds = await RankModel.find({}, { userId: 1 }).sort({
+        predictTimes: -1,
+      });
+
+      let winRank = _.findIndex(winUserIds, ['userId', userId]);
+      let predictRank = _.findIndex(predictUserIds, ['userId', userId]);
+
       const rank = await RankModel.findOne({ userId }, {
         userId: 1,
         username: 1,
@@ -85,9 +97,14 @@ class Rank {
         winRatio: 1,
       });
 
+      let result = Object.assign({}, rank._doc, {
+        winRank: winRank + 1,
+        predictRank: predictRank + 1,
+      });
+
       res.send({
         state: 'success',
-        data: rank,
+        data: result,
       });
     } catch (err) {
       res.status(500);
