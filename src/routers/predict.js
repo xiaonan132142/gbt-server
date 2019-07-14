@@ -38,6 +38,8 @@ const {
  *         type: string
  *       ratio:
  *         type: string
+ *       proportion:
+ *         type: string
  */
 
 /**
@@ -101,7 +103,7 @@ router.get('/latestIndex', Predict.getLatestIndex);
  *   get:
  *     tags:
  *       - Predicts
- *     description: Returns one predict
+ *     description: Returns one's predicts
  *     parameters:
  *       - name: userId
  *         in: query
@@ -117,11 +119,34 @@ router.get('/latestIndex', Predict.getLatestIndex);
  *       - application/json
  *     responses:
  *       200:
- *         description: An Object contains one predict
+ *         description: An Object contains one's predicts
  *         schema:
  *           $ref: '#/definitions/Predict'
  */
-router.get('/personal', Predict.getOneByUserId);
+router.get('/personal', Predict.getAllByUserId);
+
+
+/**
+ * @swagger
+ * /predict/personalLatest:
+ *   get:
+ *     tags:
+ *       - Predicts
+ *     description: Returns one's latest predict
+ *     parameters:
+ *       - name: userId
+ *         in: query
+ *         required: true
+ *         type: string
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: An Object contains one's latest predict
+ *         schema:
+ *           $ref: '#/definitions/Predict'
+ */
+router.get('/personalLatest', Predict.getLatestByUserId);
 
 /**
  * @swagger

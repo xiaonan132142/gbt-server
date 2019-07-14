@@ -69,7 +69,8 @@ class Rank {
   async getOneByUserId(req, res, next) {
     try {
       let userId = req.query.userId;
-      if (!userId) {
+
+      if (!userId || userId == "undefined") {
         res.send({
           state: 'error',
           message: 'userId 不能为空',

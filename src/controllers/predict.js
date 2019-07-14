@@ -51,10 +51,13 @@ class Predict {
     }
   }
 
-  async getOneByUserId(req, res, next) {
+  async getAllByUserId(req, res, next) {
     try {
       let userId = req.query.userId;
-      if (!userId) {
+      let current = req.query.current || 1;
+      let pageSize = req.query.pageSize || 10;
+
+      if (!userId || userId == 'undefined') {
         res.send({
           state: 'error',
           message: 'userId 不能为空',
@@ -62,7 +65,7 @@ class Predict {
         return;
       }
 
-      const rank = await PredictModel.findOne({ userId, date: moment().format('YYYY-MM-DD') }, {
+      const predicts = await PredictModel.find({ userId }, {
         userId: 1,
         username: 1,
         avatar: 1,
@@ -73,11 +76,20 @@ class Predict {
         actualValue: 1,
         isWin: 1,
         isFinished: 1,
-      });
+      }).sort({
+        createdAt: -1,
+      }).skip(Number(pageSize) * (Number(current) - 1)).limit(Number(pageSize));
+
+      const totalItems = await PredictModel.countDocuments();
 
       res.send({
         state: 'success',
-        data: rank,
+        data: predicts,
+        pagination: {
+          totalItems,
+          current: Number(current) || 1,
+          pageSize: Number(pageSize) || 10
+        },
       });
     } catch (err) {
       res.status(500);
@@ -85,6 +97,46 @@ class Predict {
         state: 'error',
         stack: err && err.stack,
         message: '获取个人预言记录失败',
+      });
+    }
+  }
+
+  async getLatestByUserId(req, res, next) {
+    try {
+      let userId = req.query.userId;
+
+      if (!userId || userId == 'undefined') {
+        res.send({
+          state: 'error',
+          message: 'userId 不能为空',
+        });
+        return;
+      }
+
+      const latestPredict = await PredictModel.find({ userId }, {
+        userId: 1,
+        username: 1,
+        date: 1,
+        predictResult: 1,
+        actualResult: 1,
+        predictValue: 1,
+        actualValue: 1,
+        isWin: 1,
+        isFinished: 1,
+      }).sort({
+        createdAt: -1,
+      }).skip(0).limit(1);
+
+      res.send({
+        state: 'success',
+        data: latestPredict,
+      });
+    } catch (err) {
+      res.status(500);
+      res.send({
+        state: 'error',
+        stack: err && err.stack,
+        message: '获取个人最新一条预言记录失败',
       });
     }
   }
@@ -148,10 +200,27 @@ class Predict {
 
   async getLatestIndex(req, res, next) {
     try {
-      const data = await read(settings.redis_key_btc_index)
+      const data = await read(settings.redis_key_btc_index);
+
+      const totalUp = await PredictModel.countDocuments({
+        date: moment().format('YYYY-MM-DD'),
+        predictResult: 1,
+      });
+      const totalDown = await PredictModel.countDocuments({
+        date: moment().format('YYYY-MM-DD'),
+        predictResult: -1,
+      });
+      var proportion = 0.5;
+      if (totalDown > 0 || totalUp > 0) {
+        proportion = (totalUp / (totalUp + totalDown)).toFixed(1);
+      }
+      const result = Object.assign({}, data, {
+        proportion,
+      });
+
       res.send({
         state: 'success',
-        data,
+        data: result,
       });
     } catch (err) {
       res.status(500);

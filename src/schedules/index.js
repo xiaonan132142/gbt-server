@@ -90,7 +90,7 @@ async function btcIndexQuery() {
     if (ratio > 0) {
       ratio = '+' + ratio.toFixed(2) + '%';
     } else {
-      ratio = '-' + ratio.toFixed(2) + '%';
+      ratio = ratio.toFixed(2) + '%';
     }
     let data = {
       price: a.close + '',
