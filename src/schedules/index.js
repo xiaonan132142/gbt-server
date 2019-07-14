@@ -1,6 +1,6 @@
 const schedule = require('node-schedule');
 const { logger } = require('../middleware/logFactory');
-const { write } = require('../utils/cacheUtil');
+const { write, read } = require('../utils/cacheUtil');
 const settings = require('../../config/settings');
 const RankModel = require('../models').Rank;
 const PredictModel = require('../models').Predict;
@@ -111,53 +111,69 @@ async function btcIndexQuery() {
  * @returns {Promise<void>}
  */
 async function batchUpdateResult() {
-  var rule = new schedule.RecurrenceRule();
-  rule.minute = new schedule.Range(0, 59, 1);
+  schedule.scheduleJob({ hour: 0, minute: 0, second: 0 }, async () => {
+    let btcIndex = await read(settings.redis_key_btc_index);
+    if (btcIndex) {
+      let actualResult = btcIndex.ratio.startsWith('+') ? 1 : -1;
+      let yesterday = moment().add('-1', 'days').format('YYYY-MM-DD');
 
-  //判断今天的涨跌结果，假定是涨，1
-  let actualResult = 1;
-  let actualValue = 10;//TODO total/猜1的人数
-  let yesterday = moment().add('-1', 'days').format('YYYY-MM-DD');
+      //取出昨天奖池的总额
+      const u3 = createU3(settings.u3Config);
+      const balance = await u3.getCurrencyBalance({
+        code: settings.pointAccount,
+        account: settings.poolAccount,
+        symbol: 'UPOINT',
+      });
+      let totalPool = balance.length > 0 ? balance[0].split(' ')[0] * 1 : 0;
+      //取出昨天预言成功的人
+      const totalUsers = await PredictModel.countDocuments({
+        predictResult: actualResult,
+        date: yesterday,
+      });
 
-  schedule.scheduleJob(rule, async () => {
-    logger.info('batch update result for ' + yesterday);
-    let winObj = {
-      actualResult: actualResult,
-      actualValue: actualValue,
-      isFinished: true,
-    };
-    await PredictModel.updateMany({
-      predictResult: actualResult,
-      date: yesterday,
-    }, { '$set': winObj }, { 'multi': true });
+      //算出每个人的平均收益
+      let actualValue = totalUsers > 0 ? parseInt(totalPool / totalUsers) : 0;
+
+      logger.info('batch update result for ' + yesterday);
+
+      let winObj = {
+        actualResult: actualResult,
+        actualValue: actualValue,
+        isWin: true,
+        isFinished: true,
+      };
+      await PredictModel.updateMany({
+        predictResult: actualResult,
+        date: yesterday,
+      }, { '$set': winObj }, { 'multi': true });
 
 
-    let lostObj = {
-      actualResult: -actualResult,
-      actualValue: 0,
-      isFinished: true,
-    };
-    await PredictModel.updateMany({
-      predictResult: -actualResult,
-      date: yesterday,
-    }, { '$set': lostObj }, { 'multi': true });
-
+      let lostObj = {
+        actualResult: actualResult,
+        actualValue: 0,
+        isWin: false,
+        isFinished: true,
+      };
+      await PredictModel.updateMany({
+        predictResult: -actualResult,
+        date: yesterday,
+      }, { '$set': lostObj }, { 'multi': true });
+    }
   });
+
 }
 
 
 /**
- * 每天凌晨0：05将奖池瓜分给预言成功用户
+ * 每天凌晨0：15将奖池瓜分给预言成功用户
  * 从收益账户划拨一定比例奖励给某些用户
  * @returns {Promise<void>}
  */
 async function settlement() {
-  var rule = new schedule.RecurrenceRule();
-  rule.minute = new schedule.Range(0, 59, 1);
 
-  let yesterday = moment().add('-1', 'days').format('YYYY-MM-DD');
+  schedule.scheduleJob({ hour: 0, minute: 15, second: 0 }, async () => {
 
-  schedule.scheduleJob(rule, async () => {
+    let yesterday = moment().add('-1', 'days').format('YYYY-MM-DD');
 
     logger.info('settlement for ' + yesterday);
 
@@ -167,37 +183,20 @@ async function settlement() {
       isFinished: true,
       date: yesterday,
     };
-    const totalUsers = await PredictModel.countDocuments(winObj);
+    let winList = await PredictModel.find(winObj);
+
     const u3 = await createU3(settings.u3Config);
-    const poolBalance = await u3.getCurrencyBalance({
-      code: 'ultrainpoint',
-      account: settings.poolAccount,
-      symbol: 'UPOINT',
+    await asyncForEach(winList, async w => {
+      console.log('为获胜者userId:' + w.userId + ',accountName:' + w.accountName + ',发送奖励' + w.actualValue);
+
+      const c = await u3.contract(settings.pointAccount);
+      await c.transfer(settings.poolAccount, w.accountName, w.actualValue + ' UPOINT', 'gbt settlement for ' + w.accountName + ':' + moment().format('YYYY-MM-DD HH:MM:SS'), { keyProvider: settings.poolAccountPk });
     });
-    const totalPool = poolBalance[0] ? poolBalance[0].split(' ')[0] * 1 : 0;
-    if (totalPool > 0 && totalUsers > 0) {
-
-      const eachPool = parseInt(totalPool / totalUsers);
-      logger.info(yesterday + ' 奖池总金额为' + totalPool + ',每个获奖者分得' + eachPool);
-
-      if (eachPool > 0) {
-        let winList = await PredictModel.find(winObj);
-        await asyncForEach(winList, async w => {
-          console.log('为获胜者userId:' + w.userId + ',accountName:' + w.accountName + ',发送奖励...');
-
-          const c = await u3.contract('ultrainpoint');
-          await c.transfer(settings.poolAccount, w.accountName, eachPool + ' UPOINT', 'gbt settlement for ' + w.accountName + ':' + moment().format('YYYY-MM-DD HH:MM:SS'), { keyProvider: settings.poolAccountPk });
-
-          await PredictModel.findOneAndUpdate({ userId: w.userId }, { $set: { actualValue: eachPool } }, { new: false });
-        });
-      }
-
-    }
 
 
     //80%的收益总额分配给前10个获奖用户
     const gainBalance = await u3.getCurrencyBalance({
-      code: 'ultrainpoint',
+      code: settings.pointAccount,
       account: settings.gainAccount,
       symbol: 'UPOINT',
     });
@@ -216,9 +215,9 @@ async function settlement() {
 
       await asyncForEach(rewardList, async w => {
 
-        logger.info('为用户userId:' + w.userId + ',accountName:' + w.accountName + ',发送额外奖励...');
+        logger.info('为用户userId:' + w.userId + ',accountName:' + w.accountName + ',发送额外奖励' + eachGainWillAward);
 
-        const c = await u3.contract('ultrainpoint');
+        const c = await u3.contract(settings.pointAccount);
         await c.transfer(settings.gainAccount, w.accountName, eachGainWillAward + ' UPOINT', 'gbt award for ' + w.accountName + ':' + moment().format('YYYY-MM-DD HH:MM:SS'), { keyProvider: settings.gainAccountPk });
 
         const awardObj = {
@@ -237,15 +236,15 @@ async function settlement() {
 
       //将剩下的20%收益转到产品作者账户
       const gainRemainBalance = await u3.getCurrencyBalance({
-        code: 'ultrainpoint',
+        code: settings.pointAccount,
         account: settings.gainAccount,
         symbol: 'UPOINT',
       });
       console.log(gainRemainBalance);
-      const totalRemain = gainRemainBalance[0] ? gainRemainBalance[0].split(' ')[0] : 0;
+      const totalRemain = gainRemainBalance[0] ? gainRemainBalance[0].split(' ')[0] * 1 : 0;
       if (totalRemain > 0) {
         logger.info('将剩下的20%转到个人账户' + totalRemain);
-        const c = await u3.contract('ultrainpoint');
+        const c = await u3.contract(settings.pointAccount);
         await c.transfer(settings.gainAccount, settings.personalAccount, gainRemainBalance[0], 'gbt owner gain for ' + moment().format('YYYY-MM-DD HH:MM:SS'), { keyProvider: settings.gainAccountPk });
       }
     }

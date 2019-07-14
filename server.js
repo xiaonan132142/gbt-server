@@ -81,5 +81,5 @@ var server = app.listen(settings.serverPort, function() {
 
 rankStatistic();
 btcIndexQuery();
-//batchUpdateResult();
+batchUpdateResult();
 settlement();

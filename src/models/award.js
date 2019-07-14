@@ -13,8 +13,9 @@ var AwardSchema = new Schema({
     avatar: String,
 
     accountName: String,
-    date: {type: String, default: moment().format('YYYY-MM-DD')},
+    date: { type: String, default: moment().format('YYYY-MM-DD') },
     result: Number,
+    hasRead: { type: Boolean, default: false },
   },
   {
     timestamps: true,

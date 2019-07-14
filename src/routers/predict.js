@@ -27,6 +27,8 @@ const {
  *         type: integer
  *       isFinished:
  *         type: boolean
+ *       isWin:
+ *         type: boolean
  */
 
 /**

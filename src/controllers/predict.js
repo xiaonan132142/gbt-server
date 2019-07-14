@@ -88,7 +88,7 @@ class Predict {
         pagination: {
           totalItems,
           current: Number(current) || 1,
-          pageSize: Number(pageSize) || 10
+          pageSize: Number(pageSize) || 10,
         },
       });
     } catch (err) {
@@ -142,6 +142,23 @@ class Predict {
   }
 
   async addOne(req, res, next) {
+
+    let today = moment().format('YYYY-MM-DD');
+
+    let sDateStr = today + ' 00:30:00';
+    let eDateStr = today + ' 22:30:00';
+    let sDate = moment(sDateStr, 'YYYY-MM-DD hh:mm:ss');
+    let eDate = moment(eDateStr, 'YYYY-MM-DD hh:mm:ss');
+
+    if (moment() < sDate || moment() > eDate) {
+      res.status(500);
+      res.send({
+        state: 'error',
+        message: '当前时间段不能预言',
+      });
+      return;
+    }
+
     const phoneNum = req.body.phoneNum;
     const predictResult = req.body.predictResult;
     const predictValue = req.body.predictValue;

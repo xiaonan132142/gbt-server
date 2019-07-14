@@ -31,6 +31,7 @@ module.exports = {
     chainId:"20c35b993c10b5ea1007014857bb2b8832fb8ae22e9dcfdc61dacf336af4450f",
     //logger: undefined
   },
+  pointAccount:"ultrainpoint",
   poolAccount:"guessbtc",
   poolAccountPk:"5HwVm37N47bXiWoEP2ZMBL6HCDWuPWmoyvgZAmokvXH5u1Q7Mfo",
   gainAccount:"guessbtcgain",
