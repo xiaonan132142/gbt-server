@@ -23,6 +23,7 @@ var PredictSchema = new Schema({
 
     isWin: { type: Boolean, default: false },
     isFinished: { type: Boolean, default: false },
+    hasRead: { type: Boolean, default: false },
   },
   {
     timestamps: true,

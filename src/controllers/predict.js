@@ -123,6 +123,7 @@ class Predict {
         actualValue: 1,
         isWin: 1,
         isFinished: 1,
+        hasRead: 1,
       }).sort({
         createdAt: -1,
       }).skip(0).limit(1);
@@ -205,6 +206,38 @@ class Predict {
           id: newPredict._id,
         });
       }
+    } catch (err) {
+      res.status(500);
+      res.send({
+        state: 'error',
+        stack: err && err.stack,
+        message: '保存数据失败:',
+      });
+    }
+  }
+
+  async updateOne(req, res, next) {
+    const _id = req.body.id;
+
+    if (!_id) {
+      res.status(500);
+      res.send({
+        state: 'error',
+        message: 'id 不能为空',
+      });
+      return;
+    }
+
+    try {
+      const award = {
+        hasRead: true,
+      };
+      await PredictModel.findOneAndUpdate({ _id }, award, { upsert: true });
+      res.send({
+        state: 'success',
+        message: '',
+      });
+
     } catch (err) {
       res.status(500);
       res.send({

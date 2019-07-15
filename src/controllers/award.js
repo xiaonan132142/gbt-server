@@ -109,6 +109,11 @@ class Award {
         hasRead: true,
       };
       await AwardModel.findOneAndUpdate({ _id }, award, { upsert: true });
+      res.send({
+        state: 'success',
+        message: '',
+      });
+
     } catch (err) {
       res.status(500);
       res.send({

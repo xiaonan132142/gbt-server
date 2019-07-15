@@ -29,6 +29,8 @@ const {
  *         type: boolean
  *       isWin:
  *         type: boolean
+ *       hasRead:
+ *         type: boolean
  */
 
 /**
@@ -57,6 +59,14 @@ const {
  *         type: integer
  */
 
+/**
+ * @swagger
+ * definitions:
+ *   PredictUpdateDTO:
+ *     properties:
+ *       id:
+ *         type: string
+ */
 
 /**
  * @swagger
@@ -171,5 +181,27 @@ router.get('/personalLatest', Predict.getLatestByUserId);
  *         description: Successfully created
  */
 router.post('/add', Predict.addOne);
+
+/**
+ * @swagger
+ * /predict/update:
+ *   post:
+ *     tags:
+ *       - Predicts
+ *     description: Update a predict as hasRead
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: id
+ *         description: Predict id
+ *         in: body
+ *         required: true
+ *         schema:
+ *           $ref: '#/definitions/PredictUpdateDTO'
+ *     responses:
+ *       200:
+ *         description: Successfully updated
+ */
+router.post('/update', Predict.updateOne);
 
 module.exports = router;
