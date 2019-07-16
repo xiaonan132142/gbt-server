@@ -51,5 +51,5 @@ module.exports = {
   secretId: 'sKsTU6AMtpvDIPUJqrVTDmN689bJPnYS',
   serverUrl: 'http://history.natapp1.cc',
   imageUrl: 'https://developer.ultrain.io',
-  swaggerUrl: 'benyasin.s1.natapp.cc',
+  swaggerUrl: 'gbt-server.playinggame.me',
 };
