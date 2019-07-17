@@ -161,36 +161,25 @@ class Predict {
       return;
     }
 
-    const phoneNum = req.body.phoneNum;
+    const userId = req.body.userId;
     const predictResult = req.body.predictResult;
     const predictValue = req.body.predictValue;
 
-    if (!phoneNum) {
+    if (!userId) {
       res.status(500);
       res.send({
         state: 'error',
-        message: 'phoneNum 不能为空',
+        message: 'userId 不能为空',
       });
       return;
     }
     try {
-      let result = await getUserBasicInfo(phoneNum);
-      if (!result || !result.data || result.data.state !== 'success') {
-        res.status(500);
-        res.send({
-          state: 'error',
-          message: '没有找到该手机号对应的用户',
-        });
-        return;
-      }
-      let userInfo = result.data.data;
       const predictObj = {
-        userId: userInfo.id,
-
+        userId,
         predictResult,
         predictValue,
       };
-      let existed = await PredictModel.findOne({ userId: userInfo.id, date: moment().format('YYYY-MM-DD') });
+      let existed = await PredictModel.findOne({ userId, date: moment().format('YYYY-MM-DD') });
       if (!_.isEmpty(existed)) {
         res.status(500);
         res.send({
