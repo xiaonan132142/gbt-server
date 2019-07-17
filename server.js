@@ -47,6 +47,7 @@ const predict = require('./src/routers/predict');
 const rank = require('./src/routers/rank');
 const chat = require('./src/routers/chat');
 const award = require('./src/routers/award');
+const user = require('./src/routers/user');
 
 
 app.all('*', function(req, res, next) {
@@ -68,6 +69,7 @@ app.use('/predict', predict);
 app.use('/chat', chat);
 app.use('/rank', rank);
 app.use('/award', award);
+app.use('/user', user);
 
 app.get('/', function(req, res) {
   res.send('Hello World');

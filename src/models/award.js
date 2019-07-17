@@ -1,6 +1,7 @@
 var mongoose = require('mongoose');
 var shortid = require('shortid');
 var moment = require('moment');
+var User = require('./user');
 var Schema = mongoose.Schema;
 
 var AwardSchema = new Schema({
@@ -8,11 +9,7 @@ var AwardSchema = new Schema({
       type: String,
       'default': shortid.generate,
     },
-    userId: String,
-    username: String,
-    avatar: String,
-
-    accountName: String,
+    userId: {type: String, ref: 'User'},
     date: { type: String, default: moment().format('YYYY-MM-DD') },
     result: Number,
     hasRead: { type: Boolean, default: false },

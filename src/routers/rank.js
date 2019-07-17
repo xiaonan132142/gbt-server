@@ -27,6 +27,8 @@ const {
  *         type: integer
  *       predictRank:
  *         type: integer
+ *       awardTimes:
+ *         type: integer
  */
 
 /**

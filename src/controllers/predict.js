@@ -17,8 +17,6 @@ class Predict {
 
       const predicts = await PredictModel.find({}, {
         'userId': 1,
-        'username': 1,
-        'avatar': 1,
         'date': 1,
         'predictResult': 1,
         'actualResult': 1,
@@ -28,7 +26,11 @@ class Predict {
         'isFinished': 1,
       }).sort({
         createdAt: -1,
-      }).skip(Number(pageSize) * (Number(current) - 1)).limit(Number(pageSize));
+      }).skip(Number(pageSize) * (Number(current) - 1)).limit(Number(pageSize)).populate([
+        {
+          path: 'userId',
+          select: 'username avatar accountName phoneNum',
+        }]).exec();
 
       const totalItems = await PredictModel.countDocuments();
 
@@ -67,8 +69,6 @@ class Predict {
 
       const predicts = await PredictModel.find({ userId }, {
         userId: 1,
-        username: 1,
-        avatar: 1,
         date: 1,
         predictResult: 1,
         actualResult: 1,
@@ -78,7 +78,11 @@ class Predict {
         isFinished: 1,
       }).sort({
         createdAt: -1,
-      }).skip(Number(pageSize) * (Number(current) - 1)).limit(Number(pageSize));
+      }).skip(Number(pageSize) * (Number(current) - 1)).limit(Number(pageSize)).populate([
+        {
+          path: 'userId',
+          select: 'username avatar accountName phoneNum',
+        }]).exec();
 
       const totalItems = await PredictModel.countDocuments();
 
@@ -113,9 +117,8 @@ class Predict {
         return;
       }
 
-      const latestPredict = await PredictModel.find({ userId }, {
+      const latestPredict = await PredictModel.findOne({ userId }, {
         userId: 1,
-        username: 1,
         date: 1,
         predictResult: 1,
         actualResult: 1,
@@ -124,9 +127,7 @@ class Predict {
         isWin: 1,
         isFinished: 1,
         hasRead: 1,
-      }).sort({
-        createdAt: -1,
-      }).skip(0).limit(1);
+      });
 
       res.send({
         state: 'success',
@@ -185,8 +186,6 @@ class Predict {
       let userInfo = result.data.data;
       const predictObj = {
         userId: userInfo.id,
-        username: userInfo.name,
-        avatar: userInfo.logo,
 
         predictResult,
         predictValue,
@@ -229,10 +228,10 @@ class Predict {
     }
 
     try {
-      const award = {
+      const predict = {
         hasRead: true,
       };
-      await PredictModel.findOneAndUpdate({ _id }, award, { upsert: true });
+      await PredictModel.findOneAndUpdate({ _id }, predict, { upsert: true });
       res.send({
         state: 'success',
         message: '',

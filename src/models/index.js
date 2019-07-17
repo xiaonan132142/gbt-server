@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const isProd = process.env.NODE_ENV === 'production';
 const settings = require('../../config/settings');
 
-mongoose.set('useFindAndModify', false);
+mongoose.set('useFindAndModify', true);
 mongoose.set('useCreateIndex', true);
 mongoose.set('useNewUrlParser', true);
 
@@ -33,3 +33,4 @@ exports.Predict = require('./predict');
 exports.Chat = require('./chat');
 exports.Rank = require('./rank');
 exports.Award = require('./award');
+exports.User = require('./user');

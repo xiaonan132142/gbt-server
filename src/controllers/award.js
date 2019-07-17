@@ -1,8 +1,5 @@
 const _ = require('lodash');
-const settings = require('../../config/settings');
 const AwardModel = require('../models').Award;
-const { getUserBasicInfo } = require('../utils/dataAsync');
-const moment = require('moment');
 
 class Award {
   constructor() {
@@ -25,13 +22,15 @@ class Award {
 
       const awards = await AwardModel.find({ userId }, {
         'userId': 1,
-        'username': 1,
-        'avatar': 1,
         'date': 1,
         'result': 1,
       }).sort({
         createdAt: -1,
-      }).skip(Number(pageSize) * (Number(current) - 1)).limit(Number(pageSize));
+      }).skip(Number(pageSize) * (Number(current) - 1)).limit(Number(pageSize)).populate([
+        {
+          path: 'userId',
+          select: 'username avatar accountName phoneNum',
+        }]).exec();
 
       const totalItems = await AwardModel.countDocuments({ userId });
 
@@ -66,17 +65,15 @@ class Award {
         return;
       }
 
-      const latestAward = await AwardModel.find({ userId }, {
+      const latestAward = await AwardModel.findOne({ userId }, {
         '_id': 1,
         'userId': 1,
-        'username': 1,
-        'avatar': 1,
         'date': 1,
         'result': 1,
         'hasRead': 1,
       }).sort({
         createdAt: -1,
-      }).skip(0).limit(1);
+      });
 
       res.send({
         state: 'success',

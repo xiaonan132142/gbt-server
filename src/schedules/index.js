@@ -36,10 +36,10 @@ async function rankStatistic() {
   schedule.scheduleJob(rule, async () => {
 
     const statistics = await PredictModel.aggregate([
-      { '$match': { 'isFinished': true } },
+      //{ '$match': { 'isFinished': true } },
       {
         '$group': {
-          _id: { userId: '$userId', username: '$username', avatar: '$avatar' },
+          _id: { userId: '$userId' },
           predictTimes: { $sum: 1 },
           winTimes: {
             $sum: { '$cond': [{ '$eq': ['$isWin', true] }, 1, 0] },
@@ -58,18 +58,14 @@ async function rankStatistic() {
 
     await asyncForEach(statistics, async s => {
       let userId = s._id.userId;
-      let username = s._id.username;
-      let avatar = s._id.avatar;
       const rank = {
         userId,
-        username,
-        avatar,
         predictTimes: s.predictTimes,
         winTimes: s.winTimes,
         winRatio: s.winRatio,
       };
 
-      await RankModel.findOneAndUpdate({ userId }, rank, { upsert: true });
+      await RankModel.findOneAndUpdate({ userId }, { $set: rank }, { upsert: true });
     });
   });
 }

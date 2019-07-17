@@ -1,6 +1,6 @@
 var mongoose = require('mongoose');
 var shortid = require('shortid');
-var moment = require('moment');
+var User = require('./user');
 var Schema = mongoose.Schema;
 
 var ChatSchema = new Schema({
@@ -9,13 +9,22 @@ var ChatSchema = new Schema({
       'default': shortid.generate,
     },
     userId: String,
-    username: String,
-    avatar: String,
     content: String,
+  },
+  {
+    toObject: { virtuals: true },
+    toJSON: { virtuals: true },
   },
   {
     timestamps: true,
   });
+
+ChatSchema.virtual('user', {
+  ref: 'User',
+  localField: 'userId',
+  foreignField: 'userId',
+  justOne: true, // for many-to-1 relationships
+});
 
 var Chat = mongoose.model('Chat', ChatSchema);
 module.exports = Chat;

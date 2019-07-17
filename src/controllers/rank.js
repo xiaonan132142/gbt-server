@@ -1,5 +1,7 @@
 const _ = require('lodash');
 const RankModel = require('../models').Rank;
+const AwardModel = require('../models').Award;
+const UserModel = require('../models').User;
 
 class Rank {
   constructor() {
@@ -11,9 +13,18 @@ class Rank {
       let current = req.query.current || 1;
       let pageSize = req.query.pageSize || 10;
 
-      const ranks = await RankModel.find({}).sort({
+      const ranks = await RankModel.find({}, {
+        winTimes: 1,
+        winRatio: 1,
+        predictTimes: 1,
+        userId: 1,
+      }).sort({
         predictTimes: -1,
-      }).skip(Number(pageSize) * (Number(current) - 1)).limit(Number(pageSize));
+      }).skip(Number(pageSize) * (Number(current) - 1)).limit(Number(pageSize)).populate([
+        {
+          path: 'user',
+          select: 'username avatar accountName phoneNum',
+        }]).exec();
 
       const totalItems = await RankModel.countDocuments();
 
@@ -41,9 +52,18 @@ class Rank {
       let current = req.query.current || 1;
       let pageSize = req.query.pageSize || 10;
 
-      const ranks = await RankModel.find({}).sort({
+      const ranks = await RankModel.find({ winRatio: { $gt: 0 } }, {
+        winTimes: 1,
+        winRatio: 1,
+        predictTimes: 1,
+        userId: 1,
+      }).sort({
         winRatio: -1,
-      }).skip(Number(pageSize) * (Number(current) - 1)).limit(Number(pageSize));
+      }).skip(Number(pageSize) * (Number(current) - 1)).limit(Number(pageSize)).populate([
+        {
+          path: 'user',
+          select: 'username avatar accountName phoneNum',
+        }]).exec();
 
       const totalItems = await RankModel.countDocuments();
 
@@ -70,7 +90,7 @@ class Rank {
     try {
       let userId = req.query.userId;
 
-      if (!userId || userId == "undefined") {
+      if (!userId || userId == 'undefined') {
         res.send({
           state: 'error',
           message: 'userId 不能为空',
@@ -78,7 +98,7 @@ class Rank {
         return;
       }
 
-      const winUserIds = await RankModel.find({}, { userId: 1 }).sort({
+      const winUserIds = await RankModel.find({ winRatio: { $gt: 0 } }, { userId: 1 }).sort({
         winRatio: -1,
       });
 
@@ -91,17 +111,23 @@ class Rank {
 
       const rank = await RankModel.findOne({ userId }, {
         userId: 1,
-        username: 1,
-        avatar: 1,
         winTimes: 1,
         predictTimes: 1,
         winRatio: 1,
       });
 
-      let result = Object.assign({}, rank._doc, {
+      const awardTimes = await AwardModel.countDocuments({ userId });
+      let result = {
+        awardTimes,
+        winRatio: 0,
+        winTimes: 0,
+        predictTimes: 0,
         winRank: winRank + 1,
         predictRank: predictRank + 1,
-      });
+      };
+      if (rank) {
+        result = Object.assign({}, result, rank._doc);
+      }
 
       res.send({
         state: 'success',
