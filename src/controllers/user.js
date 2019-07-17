@@ -43,13 +43,14 @@ class User {
         userId: userInfo.id,
         username: userInfo.name,
         avatar: userInfo.logo,
+        phoneNum,
         accountName,
       };
       await UserModel.findOneAndUpdate({ userId }, userObj, { upsert: true });
 
       res.send({
         state: 'success',
-        data: userObj
+        data: userObj,
       });
     } catch (err) {
       res.status(500);
