@@ -50,6 +50,6 @@ module.exports = {
   ultrainId: 'ultrain1Qj2zICAtXPF90S',
   secretId: 'sKsTU6AMtpvDIPUJqrVTDmN689bJPnYS',
   serverUrl: 'http://history.natapp1.cc',
-  imageUrl: 'https://developer.ultrain.io',
+  imageUrl: 'https://testnet-developer.ultrain.io',
   swaggerUrl: 'gbt-server.playinggame.me',
 };

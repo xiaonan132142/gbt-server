@@ -25,7 +25,7 @@ async function getUserBasicInfo(phoneNum) {
       });
       if (userInfo && userInfo.data && userInfo.data.data && userInfo.data.data.logo) {
         let logo = userInfo.data.data.logo;
-        if (!logo.startsWith('http')) {
+        if (!logo.startsWith('http') && !logo.startsWith('data:image')) {
           userInfo.data.data.logo = settings.imageUrl + logo;
         }
       }
