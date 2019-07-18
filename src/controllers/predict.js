@@ -117,7 +117,8 @@ class Predict {
         return;
       }
 
-      const latestPredict = await PredictModel.findOne({ userId }, {
+      let latestPredict = null;
+      let latestPredicts = await PredictModel.find({ userId }, {
         userId: 1,
         date: 1,
         predictResult: 1,
@@ -127,8 +128,13 @@ class Predict {
         isWin: 1,
         isFinished: 1,
         hasRead: 1,
-      });
+      }).sort({
+        createdAt: -1,
+      }).skip(0).limit(1);
 
+      if (latestPredicts.length) {
+        latestPredict = latestPredicts[0];
+      }
       res.send({
         state: 'success',
         data: latestPredict,

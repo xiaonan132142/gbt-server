@@ -65,7 +65,8 @@ class Award {
         return;
       }
 
-      const latestAward = await AwardModel.findOne({ userId }, {
+      let latestAward = null;
+      let latestAwards = await AwardModel.find({ userId }, {
         '_id': 1,
         'userId': 1,
         'date': 1,
@@ -73,7 +74,11 @@ class Award {
         'hasRead': 1,
       }).sort({
         createdAt: -1,
-      });
+      }).skip(0).limit(1);
+
+      if (latestAwards.length) {
+        latestAward = latestAwards[0];
+      }
 
       res.send({
         state: 'success',
