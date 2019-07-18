@@ -49,7 +49,7 @@ module.exports = {
 
   ultrainId: 'ultrain1Qj2zICAtXPF90S',
   secretId: 'sKsTU6AMtpvDIPUJqrVTDmN689bJPnYS',
-  serverUrl: 'http://testnet-dev.ultrain.io',
+  serverUrl: 'https://testnet-dev.ultrain.io',
   imageUrl: 'https://testnet-developer.ultrain.io',
   swaggerUrl: 'gbt-server.playinggame.me',
 };

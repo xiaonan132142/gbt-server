@@ -4,21 +4,13 @@ const { get, post } = require('../utils/ajaxUtil');
 const { logger } = require('../middleware/logFactory');
 const _ = require('lodash');
 
-async function getAccessToken() {
+async function getUserBasicInfo(phoneNum) {
   try {
-    let token = await post(settings.serverUrl + '/api/dapp/getAccessToken', {
+    let result = await post(settings.serverUrl + '/api/dapp/getAccessToken', {
       ultrainId: settings.ultrainId,
       secretId: settings.secretId,
     });
-    return token;
-  } catch (e) {
-    logger.error(e);
-  }
-}
 
-async function getUserBasicInfo(phoneNum) {
-  let result = await getAccessToken();
-  try {
     if (result && result.data && result.data.token) {
       let userInfo = await get(settings.serverUrl + '/api/user/getUserBasicInfo?phoneNum=' + phoneNum, null, {
         'x-access-token': result.data.token,
