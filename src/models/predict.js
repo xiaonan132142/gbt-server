@@ -24,14 +24,6 @@ var PredictSchema = new Schema({
     timestamps: true,
   });
 
-PredictSchema.index({
-  userId: 1,
-  date: 1,
-}, {
-  unique: true,
-});
-
-
 var Predict = mongoose.model('Predict', PredictSchema);
 module.exports = Predict;
 
