@@ -86,6 +86,55 @@ class Rank {
     }
   }
 
+  async getAllByActiveAndWin(req, res, next) {
+    try {
+      let current = req.query.current || 1;
+      let pageSize = req.query.pageSize || 10;
+
+      const activeRanks = await RankModel.find({}, {
+        winTimes: 1,
+        winRatio: 1,
+        predictTimes: 1,
+        userId: 1,
+      }).sort({
+        predictTimes: -1,
+      }).skip(Number(pageSize) * (Number(current) - 1)).limit(Number(pageSize)).populate([
+        {
+          path: 'user',
+          select: 'username avatar accountName phoneNum',
+        }]).exec();
+
+
+      const winRanks = await RankModel.find({ winRatio: { $gt: 0 } }, {
+        winTimes: 1,
+        winRatio: 1,
+        predictTimes: 1,
+        userId: 1,
+      }).sort({
+        winRatio: -1,
+      }).skip(Number(pageSize) * (Number(current) - 1)).limit(Number(pageSize)).populate([
+        {
+          path: 'user',
+          select: 'username avatar accountName phoneNum',
+        }]).exec();
+
+      res.send({
+        state: 'success',
+        data: {
+          activeRanks,
+          winRanks,
+        },
+      });
+    } catch (err) {
+      res.status(500);
+      res.send({
+        state: 'error',
+        stack: err && err.stack,
+        message: '获取活跃度与胜率列表失败',
+      });
+    }
+  }
+
   async getOneByUserId(req, res, next) {
     try {
       let userId = req.query.userId;

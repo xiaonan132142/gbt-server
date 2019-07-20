@@ -33,6 +33,17 @@ const {
 
 /**
  * @swagger
+ * definitions:
+ *   AllRank:
+ *     properties:
+ *       active:
+ *          $ref: '#/definitions/Rank'
+ *       win:
+ *          $ref: '#/definitions/Rank'
+ */
+
+/**
+ * @swagger
  * /rank/activeList:
  *   get:
  *     tags:
@@ -78,6 +89,32 @@ router.get('/activeList', Rank.getAllByActive);
  *           $ref: '#/definitions/Rank'
  */
 router.get('/winList', Rank.getAllByWin);
+
+
+/**
+ * @swagger
+ * /rank/activeAndWinList:
+ *   get:
+ *     tags:
+ *       - Ranks
+ *     description: Returns all rank by win
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: current
+ *         in: query
+ *         type: integer
+ *       - name: pageSize
+ *         in: query
+ *         type: integer
+ *     responses:
+ *       200:
+ *         description: An Object contains all rank by win
+ *         schema:
+ *           $ref: '#/definitions/AllRank'
+ */
+router.get('/activeAndWinList', Rank.getAllByActiveAndWin);
+
 
 /**
  * @swagger
