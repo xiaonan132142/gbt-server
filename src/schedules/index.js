@@ -179,14 +179,23 @@ async function settlement() {
       isFinished: true,
       date: yesterday,
     };
-    let winList = await PredictModel.find(winObj);
+    let winList = await PredictModel.aggregate([
+      {
+        $match: winObj,
+      },
+      {
+        $lookup: {
+          from: 'users', localField: 'userId', foreignField: 'userId', as: 'user',
+        },
+      },
+    ]);
 
     const u3 = await createU3(settings.u3Config);
     await asyncForEach(winList, async w => {
-      console.log('为获胜者userId:' + w.userId + ',accountName:' + w.accountName + ',发送奖励' + w.actualValue);
+      console.log('为获胜者userId:' + w.userId + ',accountName:' + w.user[0].accountName + ',发送奖励' + w.actualValue);
 
       const c = await u3.contract(settings.pointAccount);
-      await c.transfer(settings.poolAccount, w.accountName, w.actualValue + ' UPOINT', 'gbt settlement for ' + w.accountName + ':' + moment().format('YYYY-MM-DD HH:MM:SS'), { keyProvider: settings.poolAccountPk });
+      await c.transfer(settings.poolAccount, w.user[0].accountName, w.actualValue + ' UPOINT', 'gbt settlement for ' + w.user[0].accountName + ':' + moment().format('YYYY-MM-DD HH:MM:SS'), { keyProvider: settings.poolAccountPk });
     });
 
 
@@ -205,23 +214,22 @@ async function settlement() {
     if (eachGainWillAward > 0) {
 
       logger.info('为前' + settings.topUserForAward + '个人发送额外奖励' + eachGainWillAward);
-      let rewardList = await PredictModel.find(winObj).sort({
-        createdAt: -1,
-      }).skip(0).limit(settings.topUserForAward);
+
+      let rewardList = winList.length > settings.topUserForAward ? winList.slice(settings.topUserForAward) : winList;
 
       await asyncForEach(rewardList, async w => {
 
-        logger.info('为用户userId:' + w.userId + ',accountName:' + w.accountName + ',发送额外奖励' + eachGainWillAward);
+        logger.info('为用户userId:' + w.userId + ',accountName:' + w.user[0].accountName + ',发送额外奖励' + eachGainWillAward);
 
         const c = await u3.contract(settings.pointAccount);
-        await c.transfer(settings.gainAccount, w.accountName, eachGainWillAward + ' UPOINT', 'gbt award for ' + w.accountName + ':' + moment().format('YYYY-MM-DD HH:MM:SS'), { keyProvider: settings.gainAccountPk });
+        await c.transfer(settings.gainAccount, w.user[0].accountName, eachGainWillAward + ' UPOINT', 'gbt award for ' + w.user[0].accountName + ':' + moment().format('YYYY-MM-DD HH:MM:SS'), { keyProvider: settings.gainAccountPk });
 
         const awardObj = {
           userId: w.userId,
           username: w.username,
           avatar: w.avatar,
 
-          accountName: w.accountName,
+          accountName: w.user[0].accountName,
           date: yesterday,
           result: eachGainWillAward,
         };
@@ -239,7 +247,7 @@ async function settlement() {
       console.log(gainRemainBalance);
       const totalRemain = gainRemainBalance[0] ? gainRemainBalance[0].split(' ')[0] * 1 : 0;
       if (totalRemain > 0) {
-        logger.info('将剩下的20%转到个人账户' + totalRemain);
+        logger.info('将剩下的20%转到个人账户，为' + totalRemain);
         const c = await u3.contract(settings.pointAccount);
         await c.transfer(settings.gainAccount, settings.personalAccount, gainRemainBalance[0], 'gbt owner gain for ' + moment().format('YYYY-MM-DD HH:MM:SS'), { keyProvider: settings.gainAccountPk });
       }
