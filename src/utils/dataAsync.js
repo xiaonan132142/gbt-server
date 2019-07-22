@@ -2,7 +2,6 @@ const { write, deleteExpired } = require('./cacheUtil');
 const settings = require('../../config/settings');
 const { get, post } = require('../utils/ajaxUtil');
 const { logger } = require('../middleware/logFactory');
-const randomstring = require('randomstring');
 const _ = require('lodash');
 
 async function getUserBasicInfo(phoneNum) {
@@ -19,7 +18,7 @@ async function getUserBasicInfo(phoneNum) {
       if (userInfo && userInfo.data && userInfo.data.data && userInfo.data.data.logo) {
         let logo = userInfo.data.data.logo;
         if (!logo.startsWith('http') && !logo.startsWith('data:image')) {
-          userInfo.data.data.logo = settings.imageUrl + logo + '?t=' + randomstring.generate(6);
+          userInfo.data.data.logo = settings.imageUrl + logo;
         }
       }
       if (userInfo && userInfo.data && userInfo.data.data) {
