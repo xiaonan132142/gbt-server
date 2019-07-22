@@ -184,6 +184,7 @@ class Predict {
         userId,
         predictResult,
         predictValue,
+        date:today
       };
       let existed = await PredictModel.findOne({ userId, date: moment().format('YYYY-MM-DD') });
       if (!_.isEmpty(existed)) {
