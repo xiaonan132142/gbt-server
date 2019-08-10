@@ -7,6 +7,7 @@ const bodyParser = require('body-parser');
 const settings = require('./config/settings');
 const { rankStatistic, btcIndexQuery, batchUpdateResult, settlement } = require('./src/schedules');
 const app = express();
+const cors = require('cors')
 
 // swagger
 const swaggerUi = require('swagger-ui-express');
@@ -50,7 +51,7 @@ const award = require('./src/routers/award');
 const user = require('./src/routers/user');
 
 
-app.all('*', function(req, res, next) {
+/*app.all('*', function(req, res, next) {
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Headers', 'Content-Type, Content-Length, Authorization, Accept, X-Requested-With, Current-Page');
   res.header('Access-Control-Allow-Methods', 'PUT, POST, GET, DELETE, OPTIONS');
@@ -60,7 +61,12 @@ app.all('*', function(req, res, next) {
   } else {
     next();
   }
-});
+});*/
+
+app.use(cors({
+  origin: ['http://gbt-server.playinggame.me', 'http://gbt.playinggame.me'],
+  credentials: true
+}))
 
 // 设置 express 根目录
 app.use(requestLogger);
